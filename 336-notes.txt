@@ -1,0 +1,37 @@
+9/3/24
+Vector Basics:
+A vector is an n-tuple where n is the dimensionality. We'll mostly be in 3-tuple space.
+Three basis vectors in 3 space:
+i^ = <1, 0, 0> - x dimension
+j^ = <0, 1, 0> - y dimension
+k^ = <0, 0, 1> - z dimension
+
+A vector v = <x, y, z> = xi^ + yj^ + zk^
+
+In ray tracing, vectors typically represent directions, positions, or colors
+
+A direction vector is a direction from the origin <0, 0, 0>
+
+ADD two vectors, add their components:
+v = <x, y, z>
+w = <a, b, c> 
+v + w = <x + a, y + b, z + c>
+
+SCALE a vector is multiply the components by a scalar
+s * v = <s*x, s*y, s*z>
+
+DOT product:
+v . w = xa + yb + zc
+
+Geometrically the dot product tells us about the angle between the two vectors
+cos(theta) = (v . w)/(|v| . |w|) where |v| is the magnitude of v sqrt(x^2 + y^2 + z^2)
+cos(theta) == 0 if v is orthogonal to w
+
+A ray is an object constructed from 2 3-vectors, an origin and a direction.
+P(t) = 0 + tD, where 0 is the origin and D is the direction.
+
+Our initial camera is a pinhole camera, one without a lens
+
+-----------------------------------------------------------------------------------------
+
+9/5/24
