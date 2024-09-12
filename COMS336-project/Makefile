@@ -1,5 +1,3 @@
-# Makefile for compiling the C++ program to generate a PPM image
-
 # Compiler
 CXX = g++
 
@@ -10,7 +8,7 @@ CXXFLAGS = -Wall -O2
 SRC = main.cpp
 
 # Output executable
-OUT = generate_image
+OUT = generate_image.exe
 
 # PPM output file
 PPM_OUTPUT = output_image.ppm
@@ -24,8 +22,8 @@ $(OUT): $(SRC)
 
 # Run the program and generate the PPM image
 run: $(OUT)
-	./$(OUT) > $(PPM_OUTPUT)
+	$(OUT) > $(PPM_OUTPUT)
 
 # Clean the build
 clean:
-	rm -f $(OUT) $(PPM_OUTPUT)
+	del /F /Q $(OUT) $(PPM_OUTPUT)
