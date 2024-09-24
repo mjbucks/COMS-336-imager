@@ -4,10 +4,11 @@
 #include "canbehit.h"
 #include "canbehit_list.h"
 #include "sphere.h"
+#include "interval.h"
 
 color ray_color(const ray& r, const canbehit& world) {
     hit_record rec;
-    if (world.hit(r, 0, infinity, rec)) {
+    if (world.hit(r, interval(0, infinity), rec)) {
         return 0.5 * (rec.normal + color(1, 1, 1));
     }
 
@@ -26,7 +27,7 @@ int main() {
     auto aspect_ratio = 16.0 / 9.0;
     auto vp_height = 2.0;
     int focal_length = 1.0;
-    int image_width = 400;
+    int image_width = 800;
     int image_height = int(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
     auto vp_width = vp_height * (double(image_width)/image_height);
