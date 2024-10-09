@@ -12,6 +12,8 @@ class camera {
         int samples_per_pixel = 10;
         int max_depth = 10;
 
+        double vfov = 90;
+
         void render(const canbehit& world) {
             init();
 
@@ -52,8 +54,10 @@ class camera {
 
             center = point3(0, 0, 0);
 
-            auto focul_len = 1.0;
-            auto vp_height = 2.0;
+            auto focal_len = 1.0;
+            auto theta = degrees_to_radians(vfov);
+            auto h = std::tan(theta/2);
+            auto vp_height = 2 * h * focal_len;
             auto vp_width = vp_height * (double(image_width)/image_height);
 
             auto vp_u = vec3(vp_width, 0, 0);
@@ -62,7 +66,7 @@ class camera {
             pixel_du = vp_u / image_width;
             pixel_dv = vp_v / image_height;
 
-            auto vp_upper_left = center - vec3(0, 0, focul_len) - vp_u/2 - vp_v/2;
+            auto vp_upper_left = center - vec3(0, 0, focal_len) - vp_u/2 - vp_v/2;
             pixel00_loc = vp_upper_left + 0.5 * (pixel_du + pixel_dv);
 
         }
