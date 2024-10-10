@@ -14,6 +14,10 @@ class camera {
 
         double vfov = 90;
 
+        point3 lookfrom = point3(0, 0, 0);
+        point3 lookat = point3(0, 0, -1);
+        vec3 vup = vec3(0, 1, 0);
+
         void render(const canbehit& world) {
             init();
 
@@ -43,6 +47,7 @@ class camera {
         point3 pixel00_loc;
         vec3 pixel_du;
         vec3 pixel_dv;
+        vec3 u, v, w;
 
         void init() {
 
@@ -52,21 +57,25 @@ class camera {
 
             pixel_samples_scale = 1.0 / samples_per_pixel;
 
-            center = point3(0, 0, 0);
+            center = lookfrom;
 
-            auto focal_len = 1.0;
+            auto focal_len = (lookfrom - lookat).length();
             auto theta = degrees_to_radians(vfov);
             auto h = std::tan(theta/2);
             auto vp_height = 2 * h * focal_len;
             auto vp_width = vp_height * (double(image_width)/image_height);
 
-            auto vp_u = vec3(vp_width, 0, 0);
-            auto vp_v = vec3(0, -vp_height, 0);
+            w = unit_vector(lookfrom - lookat);
+            u = unit_vector(cross(vup, w));
+            v = cross(w, u);
+
+            auto vp_u = vp_width * u;
+            auto vp_v = vp_height * -v;
 
             pixel_du = vp_u / image_width;
             pixel_dv = vp_v / image_height;
 
-            auto vp_upper_left = center - vec3(0, 0, focal_len) - vp_u/2 - vp_v/2;
+            auto vp_upper_left = center - (focal_len * w) - vp_u/2 - vp_v/2;
             pixel00_loc = vp_upper_left + 0.5 * (pixel_du + pixel_dv);
 
         }
