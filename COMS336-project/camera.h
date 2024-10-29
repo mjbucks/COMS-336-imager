@@ -18,6 +18,9 @@ class camera {
         point3 lookat = point3(0, 0, -1);
         vec3 vup = vec3(0, 1, 0);
 
+        double defocus_angle = 0;
+        double focus_dist = 10;
+
         void render(const canbehit& world) {
             init();
 
@@ -48,6 +51,8 @@ class camera {
         vec3 pixel_du;
         vec3 pixel_dv;
         vec3 u, v, w;
+        vec3 defocus_disk_u;
+        vec3 defocus_disk_v;
 
         void init() {
 
@@ -59,10 +64,9 @@ class camera {
 
             center = lookfrom;
 
-            auto focal_len = (lookfrom - lookat).length();
             auto theta = degrees_to_radians(vfov);
             auto h = std::tan(theta/2);
-            auto vp_height = 2 * h * focal_len;
+            auto vp_height = 2 * h * focus_dist;
             auto vp_width = vp_height * (double(image_width)/image_height);
 
             w = unit_vector(lookfrom - lookat);
@@ -75,8 +79,14 @@ class camera {
             pixel_du = vp_u / image_width;
             pixel_dv = vp_v / image_height;
 
-            auto vp_upper_left = center - (focal_len * w) - vp_u/2 - vp_v/2;
+            auto vp_upper_left = center - (focus_dist * w) - vp_u/2 - vp_v/2;
             pixel00_loc = vp_upper_left + 0.5 * (pixel_du + pixel_dv);
+
+            auto defocus_radius = focus_dist * std::tan(degrees_to_radians(defocus_angle / 2));
+
+            defocus_disk_u = u * defocus_radius;
+
+            defocus_disk_v = v * defocus_radius;
 
         }
 
@@ -85,7 +95,7 @@ class camera {
 
             auto pixel_sample = pixel00_loc + ((k + offset.x()) * pixel_du) + ((i + offset.y()) * pixel_dv);
 
-            auto ray_origin = center;
+            auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();;
             auto ray_dir = pixel_sample - ray_origin;
 
             return ray(ray_origin, ray_dir);
@@ -93,6 +103,11 @@ class camera {
 
         vec3 sample_square() const {
             return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+        }
+
+        point3 defocus_disk_sample() const {
+            auto p = random_in_unit_disk();
+            return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
         }
 
         color ray_color(const ray& r, int depth, const canbehit& world) const {
