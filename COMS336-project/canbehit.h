@@ -2,6 +2,7 @@
 #define CANBEHIT_H
 
 #include "commons.h"
+#include "aabb.h"
 
 class material;
 
@@ -24,6 +25,8 @@ class canbehit {
         virtual ~canbehit() = default;
 
         virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
+
+        virtual aabb bounding_box() const = 0;
 };
 
 #endif

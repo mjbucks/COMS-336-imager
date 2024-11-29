@@ -2,6 +2,8 @@
 #define MATERIAL_H
 
 #include "canbehit.h"
+#include "color.h"
+#include "ray.h"
 
 class material {
     public:

@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "bvh.h"
 #include "camera.h"
 #include "commons.h"
 #include "canbehit.h"
@@ -51,6 +52,8 @@ int main() {
 
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
+
+    world = canbehit_list(make_shared<bvh_node>(world));
 
     camera cam;
 

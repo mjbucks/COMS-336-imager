@@ -26,9 +26,9 @@ inline double random_double(double min, double max) {
     return min + (max - min)*random_double();
 }
 
-#include "color.h"
-#include "interval.h"
-#include "ray.h"
-#include "vec3.h"
+inline int random_int(int min, int max) {
+    // Returns a random integer in [min,max].
+    return int(random_double(min, max+1));
+}
 
 #endif

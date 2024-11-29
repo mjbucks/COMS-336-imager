@@ -1,6 +1,7 @@
 #ifndef CANBEHIT_LIST_H
 #define CANBEHIT_LIST_H
 
+#include "aabb.h"
 #include "canbehit.h"
 #include "commons.h"
 
@@ -17,6 +18,7 @@ class canbehit_list : public canbehit {
 
     void add(shared_ptr<canbehit> object) {
         objects.push_back(object);
+        bbox = aabb(bbox, object->bounding_box());
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
@@ -34,6 +36,11 @@ class canbehit_list : public canbehit {
 
         return hit_anything;
     }
+
+    aabb bounding_box() const override { return bbox; }
+
+  private:
+    aabb bbox;
 };
 
 #endif
