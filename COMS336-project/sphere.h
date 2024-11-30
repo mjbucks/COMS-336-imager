@@ -25,7 +25,7 @@ class sphere : public canbehit {
             bbox = aabb(box1, box2);
         }
 
-        bool hit(const ray&r, interval ray_t, hit_record& rec) const override {
+        bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
             point3 current_center = center.at(r.time());
             vec3 oc = current_center - r.origin();
 
@@ -58,6 +58,8 @@ class sphere : public canbehit {
 
             rec.set_face_normal(r, outward_normal);
 
+            get_sphere_uv(outward_normal, rec.u, rec.v);
+
             rec.mat = mat;
             
             return true;
@@ -70,6 +72,14 @@ class sphere : public canbehit {
         double radius;
         shared_ptr<material> mat;
         aabb bbox;
+
+        static void get_sphere_uv(const point3& p, double& u, double& v) {
+        auto theta = std::acos(-p.y());
+        auto phi = std::atan2(-p.z(), p.x()) + pi;
+
+        u = phi / (2*pi);
+        v = theta / pi;
+    }
 };
 
 #endif
