@@ -11,6 +11,7 @@
 #include "interval.h"
 #include "texture.h"
 #include "quad.h"
+#include "triangle.h"
 
 void bouncing_spheres() {
     canbehit_list world;
@@ -383,17 +384,87 @@ void final_scene(int image_width, int samples_per_pixel, int max_depth) {
     cam.render(world);
 }
 
+void triangle_test() {
+    canbehit_list world;
+
+    // Create materials with more vibrant colors
+    auto purple = make_shared<lambertian>(color(0.8, 0.3, 0.9));
+    auto orange = make_shared<lambertian>(color(0.9, 0.4, 0.1));
+    auto teal = make_shared<lambertian>(color(0.2, 0.8, 0.8));
+    auto gold = make_shared<metal>(color(0.8, 0.6, 0.2), 0.3);
+    auto light = make_shared<diffuse_light>(color(4, 4, 4));
+
+    // Create several triangles in different positions and orientations
+    world.add(make_shared<triangle>(
+        point3(-2, 0, -2),
+        point3(-1, 0, -2),
+        point3(-1.5, 2, -1.5),
+        purple
+    ));
+    
+    world.add(make_shared<triangle>(
+        point3(1, 0, -1),
+        point3(2, 0, -1),
+        point3(1.5, 1.5, 0),
+        orange
+    ));
+    
+    world.add(make_shared<triangle>(
+        point3(-1, 0, 1),
+        point3(0, 0, 2),
+        point3(-0.5, 2, 1.5),
+        teal
+    ));
+
+    world.add(make_shared<triangle>(
+        point3(0.5, 0.5, 0),
+        point3(1.5, 0.5, 0),
+        point3(1, 2, 1),
+        gold
+    ));
+
+    // Add two light sources for better illumination
+    world.add(make_shared<quad>(point3(-2, 5, -2), vec3(4,0,0), vec3(0,0,4), light));
+    world.add(make_shared<quad>(point3(2, 4, 2), vec3(-3,0,0), vec3(0,0,-3), light));
+
+    // Add a dark ground plane
+    auto dark_gray = make_shared<lambertian>(color(0.2, 0.2, 0.2));
+    world.add(make_shared<quad>(point3(-10, -0.01, -10), vec3(20,0,0), vec3(0,0,20), dark_gray));
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+    
+    // Darker background
+    cam.background        = color(0.1, 0.1, 0.15);
+
+    cam.vfov     = 45;
+    cam.lookfrom = point3(4, 3, 4);
+    cam.lookat   = point3(0, 1, 0);
+    cam.vup      = vec3(0,1,0);
+
+    // Add some depth of field for artistic effect
+    cam.defocus_angle = 0.4;
+    cam.focus_dist    = 5.5;
+
+    cam.render(world);
+}
+
 int main() {
-    switch (7) {
+    switch (8) {
         case 1:  bouncing_spheres();   break;
         case 2:  checkered_spheres();  break;
-        case 3:  max_pizza();              break;
+        case 3:  max_pizza();          break;
         case 4:  perlin_spheres();     break;
         case 5:  quads();              break;
         case 6:  simple_light();       break;
         case 7:  cornell_box();        break;
-        case 8:  cornell_smoke();      break;
-        case 9:  final_scene(800, 10000, 40); break;
+        case 8:  triangle_test();      break;
+        case 9:  cornell_smoke();      break;
+        case 10: final_scene(800, 10000, 40); break;
         default: final_scene(400,   250,  4); break;
     }
 }
