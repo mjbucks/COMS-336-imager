@@ -12,6 +12,7 @@
 #include "texture.h"
 #include "quad.h"
 #include "triangle.h"
+#include "mesh.h"
 
 void bouncing_spheres() {
     canbehit_list world;
@@ -453,8 +454,141 @@ void triangle_test() {
     cam.render(world);
 }
 
+void mesh_test() {
+    canbehit_list world;
+
+    // Create materials
+    auto red_metal = make_shared<metal>(color(0.7, 0.3, 0.3), 0.1);
+    auto blue_diffuse = make_shared<lambertian>(color(0.2, 0.3, 0.7));
+    auto ground_material = make_shared<lambertian>(color(0.2, 0.2, 0.2));
+    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+
+    // Load meshes
+    // Assuming you have a models directory with these files
+    world.add(make_shared<mesh>("meshes/Nefertiti.obj", red_metal));
+    
+    // Add a light source above
+    world.add(make_shared<quad>(point3(-1, 8, -1), vec3(2,0,0), vec3(0,0,2), light));
+
+    // Add a ground plane
+    world.add(make_shared<quad>(point3(-15, -2, -15), vec3(30,0,0), vec3(0,0,30), ground_material));
+
+    camera cam;
+
+    // Camera settings for better visualization
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 250;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+    cam.background        = color(0.1, 0.1, 0.15);  // Dark background
+
+    // Position camera to see the meshes clearly
+    cam.vfov     = 40;
+    cam.lookfrom = point3(6, 4, 6);
+    cam.lookat   = point3(0, 0, 0);
+    cam.vup      = vec3(0,1,0);
+
+    // Add slight depth of field for artistic effect
+    cam.defocus_angle = 0.2;
+    cam.focus_dist    = 10.0;
+
+    cam.render(world);
+}
+
+void final_iowa_state_scene() {
+    canbehit_list world;
+
+    // Materials
+    auto neon_red = make_shared<diffuse_light>(color(15, 0.2, 0.2));
+    auto glass = make_shared<dielectric>(1.5);
+    auto chrome = make_shared<metal>(color(0.8, 0.8, 0.8), 0.0);
+    auto wood = make_shared<lambertian>(color(0.6, 0.3, 0.15));
+    auto bar_surface = make_shared<metal>(color(0.4, 0.4, 0.4), 0.1);
+    
+    // Create perlin noise for atmospheric effect
+    auto smoke_texture = make_shared<noise_texture>(4);
+    
+    // Bar counter (large quad with metallic surface)
+    world.add(make_shared<quad>(point3(-8, 0, -4), vec3(16,0,0), vec3(0,0,8), bar_surface));
+    
+    // Back wall with subtle texture
+    auto wall_texture = make_shared<noise_texture>(2);
+    world.add(make_shared<quad>(point3(-8, 0, 5), vec3(16,0,0), vec3(0,8,0), 
+        make_shared<lambertian>(wall_texture)));
+    
+    // Iowa State logo components (using quads for neon effect)
+    // Left: "I" shape
+    world.add(make_shared<quad>(point3(3.5, 2, 4.5), vec3(0.5,0,0), vec3(0,3,0), neon_red));
+    
+    // Middle: "S" shape (improved connections)
+    // Top horizontal
+    world.add(make_shared<quad>(point3(1.75, 4.5, 4.5), vec3(-1.5,0,0), vec3(0,0.4,0), neon_red));
+    // Top vertical
+    world.add(make_shared<quad>(point3(1.75, 4.5, 4.5), vec3(-0.4,0,0), vec3(0,-1.2,0), neon_red));
+    // Middle horizontal
+    world.add(make_shared<quad>(point3(1.75, 3.3, 4.5), vec3(-1.5,0,0), vec3(0,0.4,0), neon_red));
+    // Bottom vertical
+    world.add(make_shared<quad>(point3(0.25, 3.3, 4.5), vec3(-0.4,0,0), vec3(0,-1.2,0), neon_red));
+    // Bottom horizontal
+    world.add(make_shared<quad>(point3(1.75, 2.1, 4.5), vec3(-1.5,0,0), vec3(0,0.4,0), neon_red));
+    
+    // Right: "U" shape
+    world.add(make_shared<quad>(point3(-1, 4.5, 4.5), vec3(-0.5,0,0), vec3(0,-2.4,0), neon_red));  // Left vertical
+    world.add(make_shared<quad>(point3(-1, 2.1, 4.5), vec3(-1.5,0,0), vec3(0,0.4,0), neon_red));   // Bottom
+    world.add(make_shared<quad>(point3(-2.5, 4.5, 4.5), vec3(-0.5,0,0), vec3(0,-2.4,0), neon_red)); // Right vertical
+    
+    // Add volumetric fog effect in front of the neon
+    world.add(make_shared<constant_medium>(
+        make_shared<sphere>(point3(0, 3, 4.8), 4, shared_ptr<material>()),
+        0.01, color(0.8, 0.8, 0.8)
+    ));
+    
+    // Add some glass decorations (some moving, some stationary)
+    for(int i = 0; i < 5; i++) {
+        auto center1 = point3(-6 + i*3, 0.5, 0);
+        if (i % 2 == 0) {
+            world.add(make_shared<sphere>(center1, 0.4, glass));  // Stationary
+        } else {
+            auto center2 = center1 + vec3(0, 0.3, 0);
+            world.add(make_shared<sphere>(center1, center2, 0.4, glass));  // Moving
+        }
+    }
+    
+    // Add some moving spherical ice cubes in the glasses
+    for(int i = 0; i < 5; i++) {
+        auto center1 = point3(-5.8 + i*3, 0.8, 0);
+        auto center2 = center1 + vec3(0.3, 0.2, 0.1);
+        world.add(make_shared<sphere>(center1, center2, 0.2, chrome));
+    }
+    
+    // Add some ambient lighting
+    auto dim_light = make_shared<diffuse_light>(color(0.6, 0.6, 0.6));
+    world.add(make_shared<quad>(point3(-8, 8, -4), vec3(16,0,0), vec3(0,0,12), dim_light));
+    
+    // Camera settings for better view
+    camera cam;
+    
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 800;  // Higher resolution for final render
+    cam.samples_per_pixel = 500;  // More samples for better quality
+    cam.max_depth         = 50;
+    cam.background        = color(0.02, 0.02, 0.02);  // Very dark background
+    
+    // Position camera to see everything
+    cam.vfov     = 60;  // Wider field of view
+    cam.lookfrom = point3(0, 3, -10);  // Moved back and up
+    cam.lookat   = point3(0, 3, 4.5);  // Looking at the center of the scene
+    cam.vup      = vec3(0,1,0);
+    
+    // Reduced depth of field effect
+    cam.defocus_angle = 0.2;
+    cam.focus_dist    = 10.0;
+    
+    cam.render(world);
+}
+
 int main() {
-    switch (8) {
+    switch (11) {
         case 1:  bouncing_spheres();   break;
         case 2:  checkered_spheres();  break;
         case 3:  max_pizza();          break;
@@ -464,7 +598,9 @@ int main() {
         case 7:  cornell_box();        break;
         case 8:  triangle_test();      break;
         case 9:  cornell_smoke();      break;
-        case 10: final_scene(800, 10000, 40); break;
+        case 10: mesh_test();          break;
+        case 11: final_iowa_state_scene(); break;
+        case 12: final_scene(800, 10000, 40); break;
         default: final_scene(400,   250,  4); break;
     }
 }
