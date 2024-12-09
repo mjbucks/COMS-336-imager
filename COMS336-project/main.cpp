@@ -14,580 +14,6 @@
 #include "triangle.h"
 #include "mesh.h"
 
-void bouncing_spheres() {
-    canbehit_list world;
-
-    auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
-    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(checker)));
-
-    for (int a = -11; a < 11; a++) {
-        for (int b = -11; b < 11; b++) {
-            auto choose_mat = random_double();
-            point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
-
-            if ((center - point3(4, 0.2, 0)).length() > 0.9) {
-                shared_ptr<material> sphere_material;
-
-                if (choose_mat < 0.8) {
-                    // diffuse
-                    auto albedo = color::random() * color::random();
-                    sphere_material = make_shared<lambertian>(albedo);
-                    auto center2 = center + vec3(0, random_double(0,.5), 0);
-                    world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
-                } else if (choose_mat < 0.95) {
-                    // metal
-                    auto albedo = color::random(0.5, 1);
-                    auto fuzz = random_double(0, 0.5);
-                    sphere_material = make_shared<metal>(albedo, fuzz);
-                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
-                } else {
-                    // glass
-                    sphere_material = make_shared<dielectric>(1.5);
-                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
-                }
-            }
-        }
-    }
-
-    auto material1 = make_shared<dielectric>(1.5);
-    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
-
-    auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
-    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
-
-    auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
-    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
-
-    world = canbehit_list(make_shared<bvh_node>(world));
-
-    camera cam;
-
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
-    cam.background        = color(0.70, 0.80, 1.00);
-
-    cam.vfov     = 20;
-    cam.lookfrom = point3(13,2,3);
-    cam.lookat   = point3(0,0,0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0.6;
-    cam.focus_dist    = 10.0;
-
-    cam.render(world);
-}
-
-void checkered_spheres() {
-    canbehit_list world;
-
-    auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
-
-    world.add(make_shared<sphere>(point3(0,-10, 0), 10, make_shared<lambertian>(checker)));
-    world.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(checker)));
-
-    camera cam;
-
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
-    cam.background        = color(0.70, 0.80, 1.00);
-
-    cam.vfov     = 20;
-    cam.lookfrom = point3(13,2,3);
-    cam.lookat   = point3(0,0,0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0;
-
-    cam.render(world);
-}
-
-void max_pizza() {
-    auto max_pizza_texture = make_shared<image_texture>("max_pizza.jpg");
-    auto max_pizza_surface = make_shared<lambertian>(max_pizza_texture);
-    auto max_pizza_spehere = make_shared<sphere>(point3(0,0,-50), 10, max_pizza_surface);
-
-    camera cam;
-
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
-    cam.background        = color(0.70, 0.80, 1.00);
-
-    cam.vfov     = 20;
-    cam.lookfrom = point3(0,0,12);
-    cam.lookat   = point3(0,0,0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0;
-
-    cam.render(canbehit_list(max_pizza_spehere));
-}
-
-void perlin_spheres() {
-    canbehit_list world;
-
-    auto pertext = make_shared<noise_texture>(4);
-    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(pertext)));
-    world.add(make_shared<sphere>(point3(0,2,0), 2, make_shared<lambertian>(pertext)));
-
-    camera cam;
-
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
-    cam.background        = color(0.70, 0.80, 1.00);
-
-    cam.vfov     = 20;
-    cam.lookfrom = point3(13,2,3);
-    cam.lookat   = point3(0,0,0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0;
-
-    cam.render(world);
-}
-
-void quads() {
-    canbehit_list world;
-
-    // Materials
-    auto max_pizza_texture = make_shared<image_texture>("max_pizza.jpg");
-    auto max_pizza_surface = make_shared<lambertian>(max_pizza_texture);
-    auto left_red     = make_shared<lambertian>(color(1.0, 0.2, 0.2));
-    auto back_green   = make_shared<lambertian>(color(0.2, 1.0, 0.2));
-    auto right_blue   = make_shared<lambertian>(color(0.2, 0.2, 1.0));
-    auto upper_orange = make_shared<lambertian>(color(1.0, 0.5, 0.0));
-    auto lower_teal   = make_shared<lambertian>(color(0.2, 0.8, 0.8));
-
-    // Quads
-    world.add(make_shared<quad>(point3(-3,-2, 5), vec3(0, 0,-4), vec3(0, 4, 0), left_red));
-    world.add(make_shared<quad>(point3(-2,-2, 0), vec3(4, 0, 0), vec3(0, 4, 0), max_pizza_surface));
-    world.add(make_shared<quad>(point3( 3,-2, 1), vec3(0, 0, 4), vec3(0, 4, 0), right_blue));
-    world.add(make_shared<quad>(point3(-2, 3, 1), vec3(4, 0, 0), vec3(0, 0, 4), upper_orange));
-    world.add(make_shared<quad>(point3(-2,-3, 5), vec3(4, 0, 0), vec3(0, 0,-4), lower_teal));
-
-    camera cam;
-
-    cam.aspect_ratio      = 1.0;
-    cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
-    cam.background        = color(0.70, 0.80, 1.00);
-
-    cam.vfov     = 80;
-    cam.lookfrom = point3(0,0,9);
-    cam.lookat   = point3(0,0,0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0;
-
-    cam.render(world);
-}
-
-void simple_light() {
-    canbehit_list world;
-
-    auto pertext = make_shared<noise_texture>(4);
-    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(pertext)));
-    world.add(make_shared<sphere>(point3(0,2,0), 2, make_shared<lambertian>(pertext)));
-
-    auto difflight = make_shared<diffuse_light>(color(4,4,4));
-    world.add(make_shared<sphere>(point3(0,7,0), 2, difflight));
-    world.add(make_shared<quad>(point3(3,1,-2), vec3(2,0,0), vec3(0,2,0), difflight));
-
-    camera cam;
-
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
-    cam.background        = color(0,0,0);
-
-    cam.vfov     = 20;
-    cam.lookfrom = point3(26,3,6);
-    cam.lookat   = point3(0,2,0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0;
-
-    cam.render(world);
-}
-
-void cornell_box() {
-    canbehit_list world;
-
-    auto red   = make_shared<lambertian>(color(.65, .05, .05));
-    auto white = make_shared<lambertian>(color(.73, .73, .73));
-    auto green = make_shared<lambertian>(color(.12, .45, .15));
-    auto light = make_shared<diffuse_light>(color(255, 15, 15));
-
-    world.add(make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
-    world.add(make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
-    world.add(make_shared<quad>(point3(343, 554, 332), vec3(-130,0,0), vec3(0,0,-105), light));
-    world.add(make_shared<quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), white));
-    world.add(make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
-    world.add(make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
-
-    shared_ptr<canbehit> box1 = box(point3(0,0,0), point3(165,330,165), white);
-    box1 = make_shared<rotate_y>(box1, 15);
-    box1 = make_shared<translate>(box1, vec3(265,0,295));
-    world.add(box1);
-
-    shared_ptr<canbehit> box2 = box(point3(0,0,0), point3(165,165,165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
-    box2 = make_shared<translate>(box2, vec3(130,0,65));
-    world.add(box2);
-
-    camera cam;
-
-    cam.aspect_ratio      = 1.0;
-    cam.image_width       = 600;
-    cam.samples_per_pixel = 200;
-    cam.max_depth         = 50;
-    cam.background        = color(0,0,0);
-
-    cam.vfov     = 40;
-    cam.lookfrom = point3(278, 278, -800);
-    cam.lookat   = point3(278, 278, 0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0;
-
-    cam.render(world);
-}
-
-void cornell_smoke() {
-    canbehit_list world;
-
-    auto red   = make_shared<lambertian>(color(.65, .05, .05));
-    auto white = make_shared<lambertian>(color(.73, .73, .73));
-    auto green = make_shared<lambertian>(color(.12, .45, .15));
-    auto light = make_shared<diffuse_light>(color(7, 7, 7));
-
-    world.add(make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
-    world.add(make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
-    world.add(make_shared<quad>(point3(113,554,127), vec3(330,0,0), vec3(0,0,305), light));
-    world.add(make_shared<quad>(point3(0,555,0), vec3(555,0,0), vec3(0,0,555), white));
-    world.add(make_shared<quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), white));
-    world.add(make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
-
-    shared_ptr<canbehit> box1 = box(point3(0,0,0), point3(165,330,165), white);
-    box1 = make_shared<rotate_y>(box1, 15);
-    box1 = make_shared<translate>(box1, vec3(265,0,295));
-
-    shared_ptr<canbehit> box2 = box(point3(0,0,0), point3(165,165,165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
-    box2 = make_shared<translate>(box2, vec3(130,0,65));
-
-    world.add(make_shared<constant_medium>(box1, 0.01, color(0,0,0)));
-    world.add(make_shared<constant_medium>(box2, 0.01, color(1,1,1)));
-
-    camera cam;
-
-    cam.aspect_ratio      = 1.0;
-    cam.image_width       = 600;
-    cam.samples_per_pixel = 200;
-    cam.max_depth         = 50;
-    cam.background        = color(0,0,0);
-
-    cam.vfov     = 40;
-    cam.lookfrom = point3(278, 278, -800);
-    cam.lookat   = point3(278, 278, 0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0;
-
-    cam.render(world);
-}
-
-void final_scene(int image_width, int samples_per_pixel, int max_depth) {
-    canbehit_list boxes1;
-    auto ground = make_shared<lambertian>(color(0.48, 0.83, 0.53));
-
-    int boxes_per_side = 20;
-    for (int i = 0; i < boxes_per_side; i++) {
-        for (int j = 0; j < boxes_per_side; j++) {
-            auto w = 100.0;
-            auto x0 = -1000.0 + i*w;
-            auto z0 = -1000.0 + j*w;
-            auto y0 = 0.0;
-            auto x1 = x0 + w;
-            auto y1 = random_double(1,101);
-            auto z1 = z0 + w;
-
-            boxes1.add(box(point3(x0,y0,z0), point3(x1,y1,z1), ground));
-        }
-    }
-
-    canbehit_list world;
-
-    world.add(make_shared<bvh_node>(boxes1));
-
-    auto light = make_shared<diffuse_light>(color(7, 7, 7));
-    world.add(make_shared<quad>(point3(123,554,147), vec3(300,0,0), vec3(0,0,265), light));
-
-    auto center1 = point3(400, 400, 200);
-    auto center2 = center1 + vec3(30,0,0);
-    auto sphere_material = make_shared<lambertian>(color(0.7, 0.3, 0.1));
-    world.add(make_shared<sphere>(center1, center2, 50, sphere_material));
-
-    world.add(make_shared<sphere>(point3(260, 150, 45), 50, make_shared<dielectric>(1.5)));
-    world.add(make_shared<sphere>(
-        point3(0, 150, 145), 50, make_shared<metal>(color(0.8, 0.8, 0.9), 1.0)
-    ));
-
-    auto boundary = make_shared<sphere>(point3(360,150,145), 70, make_shared<dielectric>(1.5));
-    world.add(boundary);
-    world.add(make_shared<constant_medium>(boundary, 0.2, color(0.2, 0.4, 0.9)));
-    boundary = make_shared<sphere>(point3(0,0,0), 5000, make_shared<dielectric>(1.5));
-    world.add(make_shared<constant_medium>(boundary, .0001, color(1,1,1)));
-
-    auto emat = make_shared<lambertian>(make_shared<image_texture>("max_pizza.jpg"));
-    world.add(make_shared<sphere>(point3(400,200,400), 100, emat));
-    auto pertext = make_shared<noise_texture>(0.2);
-    world.add(make_shared<sphere>(point3(220,280,300), 80, make_shared<lambertian>(pertext)));
-
-    canbehit_list boxes2;
-    auto white = make_shared<lambertian>(color(.73, .73, .73));
-    int ns = 1000;
-    for (int j = 0; j < ns; j++) {
-        boxes2.add(make_shared<sphere>(point3::random(0,165), 10, white));
-    }
-
-    world.add(make_shared<translate>(
-        make_shared<rotate_y>(
-            make_shared<bvh_node>(boxes2), 15),
-            vec3(-100,270,395)
-        )
-    );
-
-    camera cam;
-
-    cam.aspect_ratio      = 1.0;
-    cam.image_width       = image_width;
-    cam.samples_per_pixel = samples_per_pixel;
-    cam.max_depth         = max_depth;
-    cam.background        = color(0,0,0);
-
-    cam.vfov     = 40;
-    cam.lookfrom = point3(478, 278, -600);
-    cam.lookat   = point3(278, 278, 0);
-    cam.vup      = vec3(0,1,0);
-
-    cam.defocus_angle = 0;
-
-    cam.render(world);
-}
-
-void triangle_test() {
-    canbehit_list world;
-
-    // Create materials with more vibrant colors
-    auto purple = make_shared<lambertian>(color(0.8, 0.3, 0.9));
-    auto orange = make_shared<lambertian>(color(0.9, 0.4, 0.1));
-    auto teal = make_shared<lambertian>(color(0.2, 0.8, 0.8));
-    auto gold = make_shared<metal>(color(0.8, 0.6, 0.2), 0.3);
-    auto light = make_shared<diffuse_light>(color(4, 4, 4));
-
-    // Create several triangles in different positions and orientations
-    world.add(make_shared<triangle>(
-        point3(-2, 0, -2),
-        point3(-1, 0, -2),
-        point3(-1.5, 2, -1.5),
-        purple
-    ));
-    
-    world.add(make_shared<triangle>(
-        point3(1, 0, -1),
-        point3(2, 0, -1),
-        point3(1.5, 1.5, 0),
-        orange
-    ));
-    
-    world.add(make_shared<triangle>(
-        point3(-1, 0, 1),
-        point3(0, 0, 2),
-        point3(-0.5, 2, 1.5),
-        teal
-    ));
-
-    world.add(make_shared<triangle>(
-        point3(0.5, 0.5, 0),
-        point3(1.5, 0.5, 0),
-        point3(1, 2, 1),
-        gold
-    ));
-
-    // Add two light sources for better illumination
-    world.add(make_shared<quad>(point3(-2, 5, -2), vec3(4,0,0), vec3(0,0,4), light));
-    world.add(make_shared<quad>(point3(2, 4, 2), vec3(-3,0,0), vec3(0,0,-3), light));
-
-    // Add a dark ground plane
-    auto dark_gray = make_shared<lambertian>(color(0.2, 0.2, 0.2));
-    world.add(make_shared<quad>(point3(-10, -0.01, -10), vec3(20,0,0), vec3(0,0,20), dark_gray));
-
-    camera cam;
-
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
-    
-    // Darker background
-    cam.background        = color(0.1, 0.1, 0.15);
-
-    cam.vfov     = 45;
-    cam.lookfrom = point3(4, 3, 4);
-    cam.lookat   = point3(0, 1, 0);
-    cam.vup      = vec3(0,1,0);
-
-    // Add some depth of field for artistic effect
-    cam.defocus_angle = 0.4;
-    cam.focus_dist    = 5.5;
-
-    cam.render(world);
-}
-
-void mesh_test() {
-    canbehit_list world;
-
-    // Create materials
-    auto red_metal = make_shared<metal>(color(0.7, 0.3, 0.3), 0.1);
-    auto blue_diffuse = make_shared<lambertian>(color(0.2, 0.3, 0.7));
-    auto ground_material = make_shared<lambertian>(color(0.2, 0.2, 0.2));
-    auto light = make_shared<diffuse_light>(color(15, 15, 15));
-
-    // Load meshes
-    // Assuming you have a models directory with these files
-    world.add(make_shared<mesh>("meshes/cyclone.obj", red_metal));
-    
-    // Add a light source above
-    world.add(make_shared<quad>(point3(-1, 8, -1), vec3(2,0,0), vec3(0,0,2), light));
-
-    // Add a ground plane
-    world.add(make_shared<quad>(point3(-15, -2, -15), vec3(30,0,0), vec3(0,0,30), ground_material));
-
-    camera cam;
-
-    // Camera settings for better visualization
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 250;
-    cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
-    cam.background        = color(0.1, 0.1, 0.15);  // Dark background
-
-    // Position camera to see the meshes clearly
-    cam.vfov     = 40;
-    cam.lookfrom = point3(6, 4, 6);
-    cam.lookat   = point3(0, 0, 0);
-    cam.vup      = vec3(0,1,0);
-
-    // Add slight depth of field for artistic effect
-    cam.defocus_angle = 0.2;
-    cam.focus_dist    = 10.0;
-
-    cam.render(world);
-}
-
-void isu_bar_scene() {
-    canbehit_list world;
-
-    // Materials
-    auto neon_red = make_shared<diffuse_light>(color(15, 0.2, 0.2));
-    auto yellow_light = make_shared<lambertian>(color(15, 15, 5));
-    auto glass = make_shared<dielectric>(1.5);
-    auto chrome = make_shared<metal>(color(0.8, 0.8, 0.8), 0.0);
-    auto wood = make_shared<lambertian>(color(0.6, 0.3, 0.15));
-    auto bar_surface = make_shared<metal>(color(0.4, 0.4, 0.4), 0.1);
-    auto perlin_texture = make_shared<noise_texture>(4);
-
-    // Bar counter (large quad with metallic surface)
-    world.add(make_shared<quad>(point3(-8, 0, -4), vec3(16,0,0), vec3(0,0,8), bar_surface));
-    
-    // Back wall with Perlin noise texture
-    world.add(make_shared<quad>(point3(-8, 0, 5), vec3(16,0,0), vec3(0,8,0), 
-        make_shared<lambertian>(perlin_texture)));
-    
-    // Iowa State logo components (using quads for neon effect)
-    // Left: "I" shape
-    world.add(make_shared<quad>(point3(3.5, 2, 4.5), vec3(0.5,0,0), vec3(0,3,0), neon_red));
-    
-    // Middle: "S" shape (improved connections)
-    // Top horizontal
-    world.add(make_shared<quad>(point3(1.75, 4.5, 4.5), vec3(-1.5,0,0), vec3(0,0.4,0), neon_red));
-    // Top vertical
-    world.add(make_shared<quad>(point3(1.75, 4.5, 4.5), vec3(-0.4,0,0), vec3(0,-1.2,0), neon_red));
-    // Middle horizontal
-    world.add(make_shared<quad>(point3(1.75, 3.3, 4.5), vec3(-1.5,0,0), vec3(0,0.4,0), neon_red));
-    // Bottom vertical
-    world.add(make_shared<quad>(point3(0.25, 3.3, 4.5), vec3(-0.4,0,0), vec3(0,-1.2,0), neon_red));
-    // Bottom horizontal
-    world.add(make_shared<quad>(point3(1.75, 2.1, 4.5), vec3(-1.5,0,0), vec3(0,0.4,0), neon_red));
-    
-    // Right: "U" shape
-    world.add(make_shared<quad>(point3(-1, 4.5, 4.5), vec3(-0.5,0,0), vec3(0,-2.4,0), neon_red));  // Left vertical
-    world.add(make_shared<quad>(point3(-1, 2.1, 4.5), vec3(-1.5,0,0), vec3(0,0.4,0), neon_red));   // Bottom
-    world.add(make_shared<quad>(point3(-2.5, 4.5, 4.5), vec3(-0.5,0,0), vec3(0,-2.4,0), neon_red)); // Right vertical
-    
-    // Add volumetric fog effect in front of the neon
-    world.add(make_shared<constant_medium>(
-        make_shared<sphere>(point3(0, 3, 4.8), 4, shared_ptr<material>()),
-        0.01, color(0.8, 0.8, 0.8)
-    ));
-    
-    // Add some glass decorations (some moving, some stationary)
-    for(int i = 0; i < 5; i++) {
-        auto center1 = point3(-6 + i*3, 0.5, 0);
-        if (i % 2 == 0) {
-            world.add(make_shared<sphere>(center1, 0.4, glass));  // Stationary
-        } else {
-            auto center2 = center1 + vec3(0, 0.3, 0);
-            world.add(make_shared<sphere>(center1, center2, 0.4, glass));  // Moving
-        }
-    }
-    
-    // Add some moving spherical ice cubes in the glasses
-    for(int i = 0; i < 5; i++) {
-        auto center1 = point3(-5.8 + i*3, 0.8, 0);
-        auto center2 = center1 + vec3(0.3, 0.2, 0.1);
-        world.add(make_shared<sphere>(center1, center2, 0.2, chrome));
-    }
-    
-    // Load and add the tornado mesh as a yellow light source
-    world.add(make_shared<mesh>("meshes/cyclone.obj", yellow_light));
-    
-    // Add some ambient lighting
-    auto dim_light = make_shared<diffuse_light>(color(0.6, 0.6, 0.6));
-    world.add(make_shared<quad>(point3(-8, 8, -4), vec3(16,0,0), vec3(0,0,12), dim_light));
-    
-    // Camera settings for better view
-    camera cam;
-    
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;  // Higher resolution for final render
-    cam.samples_per_pixel = 10;  // More samples for better quality
-    cam.max_depth         = 10;
-    cam.background        = color(0.02, 0.02, 0.02);  // Very dark background
-    
-    // Position camera to see everything
-    cam.vfov     = 60;  // Wider field of view
-    cam.lookfrom = point3(0, 3, -10);  // Moved back and up
-    cam.lookat   = point3(0, 3, 4.5);  // Looking at the center of the scene
-    cam.vup      = vec3(0,1,0);
-    
-    // Reduced depth of field effect
-    cam.defocus_angle = 0.2;
-    cam.focus_dist    = 10.0;
-    
-    cam.render(world);
-}
-
 void setup_common_scene(canbehit_list& world) {
     // Materials
     auto chrome = make_shared<metal>(color(0.8, 0.8, 0.8), 0.1);
@@ -793,7 +219,7 @@ void figure_7() {
     auto mesh_material = make_shared<lambertian>(color(0.3, 0.3, 0.8));  // Changed to blue
 
     // Add Nefertiti mesh directly
-    world.add(make_shared<triangle_mesh>("meshes/Nefertiti.obj", mesh_material));
+    world.add(make_shared<mesh>("meshes/Nefertiti.obj", mesh_material));
 
     // Add light source (toned down)
     auto light = make_shared<diffuse_light>(color(7, 7, 7));  // Reduced intensity
@@ -824,16 +250,280 @@ void figure_7() {
     cam.render(world);
 }
 
+void figure_8() {
+    // Scene setup
+    canbehit_list world;
+
+    // Create the four different textures
+    auto solid_texture = make_shared<solid_color>(color(0.2, 0.3, 0.7));
+    auto checker_text = make_shared<checker_texture>(0.5, color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
+    auto image_text = make_shared<image_texture>("images/max_pizza.jpg");
+    auto noise_text = make_shared<noise_texture>(1.5);
+
+    // Create materials using these textures
+    auto solid_mat = make_shared<lambertian>(solid_texture);
+    auto checker_mat = make_shared<lambertian>(checker_text);
+    auto image_mat = make_shared<lambertian>(image_text);
+    auto noise_mat = make_shared<lambertian>(noise_text);
+
+    // Add four spheres with different textures - spread them out less
+    world.add(make_shared<sphere>(point3(-1, 0, -1), 0.7, solid_mat));     // Left back
+    world.add(make_shared<sphere>(point3(1, 0, -1), 0.7, checker_mat));    // Right back
+    world.add(make_shared<sphere>(point3(-1, 0, 1), 0.7, image_mat));      // Left front
+    world.add(make_shared<sphere>(point3(1, 0, 1), 0.7, noise_mat));       // Right front
+
+    // Add light source - make it brighter and wider
+    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+    world.add(make_shared<quad>(point3(-4, 4, -4), vec3(8,0,0), vec3(0,0,8), light));
+
+    // Camera setup
+    camera cam;
+
+    // Basic image settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;  // More samples for better quality
+    cam.max_depth = 50;
+
+    // Camera position - adjusted to see all spheres
+    cam.vfov = 70;  // Wider angle
+    cam.lookfrom = point3(0, 3, 3);  // Move back and up a bit
+    cam.lookat = point3(0, 0, 0);    // Look at center
+    cam.vup = vec3(0, 1, 0);         // Normal up vector
+
+    // No depth of field
+    cam.defocus_angle = 0;
+
+    // Background
+    cam.background = color(0.2, 0.2, 0.2);  // Darker background for contrast
+
+    // Render
+    cam.render(world);
+}
+
+void figure_9() {
+    // Scene setup
+    canbehit_list world;
+
+    // Create materials
+    auto diffuse = make_shared<lambertian>(color(0.7, 0.3, 0.3));       // Red diffuse
+    auto specular = make_shared<metal>(color(0.8, 0.8, 0.8), 0.0);      // Perfect mirror
+    auto dielectr = make_shared<dielectric>(1.5);                      // Glass
+    auto emissive = make_shared<diffuse_light>(color(4, 3, 2));         // Glowing orange
+
+    // Add four spheres with different materials
+    world.add(make_shared<sphere>(point3(-1, 0, -1), 0.7, diffuse));     // Left back
+    world.add(make_shared<sphere>(point3(1, 0, -1), 0.7, specular));     // Right back
+    world.add(make_shared<sphere>(point3(-1, 0, 1), 0.7, dielectr));   // Left front
+    world.add(make_shared<sphere>(point3(1, 0, 1), 0.7, emissive));      // Right front
+
+    // Add light source (dimmer since we have an emissive sphere)
+    auto light = make_shared<diffuse_light>(color(10, 10, 10));
+    world.add(make_shared<quad>(point3(-4, 4, -4), vec3(8,0,0), vec3(0,0,8), light));
+
+    // Camera setup
+    camera cam;
+
+    // Basic image settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    // Camera position
+    cam.vfov = 70;
+    cam.lookfrom = point3(0, 3, 3);
+    cam.lookat = point3(0, 0, 0);
+    cam.vup = vec3(0, 1, 0);
+
+    // No depth of field
+    cam.defocus_angle = 0;
+
+    // Dark background to show emissive material better
+    cam.background = color(0.1, 0.1, 0.1);
+
+    // Render
+    cam.render(world);
+}
+
+void figure_10() {
+    // Scene setup
+    canbehit_list world;
+
+    // Create materials
+    auto still_mat = make_shared<lambertian>(color(0.2, 0.8, 0.2));     // Green for still sphere
+    auto motion_mat = make_shared<metal>(color(0.8, 0.2, 0.2), 0.0);    // Red metal for moving sphere
+
+    // Add still sphere
+    world.add(make_shared<sphere>(point3(-1, 0, 0), 0.7, still_mat));
+
+    // Add moving sphere (motion blur from time 0 to 1)
+    world.add(make_shared<sphere>(point3(1, 0, -1), point3(1, 0, 1), 0.7, motion_mat));
+
+    // Add light source
+    auto light = make_shared<diffuse_light>(color(10, 10, 10));
+    world.add(make_shared<quad>(point3(-4, 4, -4), vec3(8,0,0), vec3(0,0,8), light));
+
+    // Camera setup
+    camera cam;
+
+    // Basic image settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 50;  // More samples to capture motion blur
+    cam.max_depth = 50;
+
+    // Camera position
+    cam.vfov = 60;
+    cam.lookfrom = point3(0, 2, 5);
+    cam.lookat = point3(0, 0, 0);
+    cam.vup = vec3(0, 1, 0);
+
+    // No depth of field
+    cam.defocus_angle = 0;
+
+    // Background
+    cam.background = color(0.2, 0.2, 0.2);
+
+    // Render
+    cam.render(world);
+}
+
+void figure_1() {
+    // Scene setup
+    canbehit_list world;
+
+    // Create materials
+    auto red_mat = make_shared<lambertian>(color(0.8, 0.2, 0.2));    // Bright red for truck
+    auto grass_mat = make_shared<lambertian>(color(0.2, 0.6, 0.2));  // Green for grass
+    auto road_mat = make_shared<lambertian>(color(0.3, 0.3, 0.3));   // Gray for road
+    auto building_mat = make_shared<lambertian>(color(0.6, 0.6, 0.6));  // Light gray for building
+    auto sun_mat = make_shared<diffuse_light>(color(30, 16, 6));    // Orange-yellow sun
+    auto trunk_mat = make_shared<lambertian>(color(0.4, 0.2, 0.1));  // Brown for tree trunk
+    auto leaves_mat = make_shared<lambertian>(color(0.2, 0.5, 0.1));  // Dark green for leaves
+
+    // Add truck mesh
+    auto truck = make_shared<mesh>("meshes/Cybertruck.obj", red_mat);
+    world.add(truck);
+
+    // Add building (tall box) behind the truck
+    shared_ptr<canbehit> building = box(point3(0,0,0), point3(8,15,4), building_mat);
+    auto moved_building = make_shared<translate>(building, vec3(-15, 0, -4));
+    world.add(moved_building);
+    auto moved_building2 = make_shared<translate>(building, vec3(-15, 0, -14));
+    world.add(moved_building2);
+    auto moved_building3 = make_shared<translate>(building, vec3(-15, 0, 6));
+    world.add(moved_building3);
+
+    // Add tree (trunk and leaves)
+    shared_ptr<canbehit> trunk = box(point3(0,0,0), point3(1,4,1), trunk_mat);
+    auto moved_trunk = make_shared<translate>(trunk, vec3(-8, 0, 4));
+    world.add(moved_trunk);
+
+    // Add tree leaves (sphere on top of trunk)
+    auto leaves = make_shared<sphere>(point3(-8, 5, 4), 2.5, leaves_mat);
+    world.add(leaves);
+
+    // Add tree (trunk and leaves)
+    shared_ptr<canbehit> trunk2 = box(point3(0,0,0), point3(.5,2.5,.5), trunk_mat);
+    auto moved_trunk2 = make_shared<translate>(trunk2, vec3(-4, 0, 8));
+    world.add(moved_trunk2);
+
+    // Add tree leaves (sphere on top of trunk)
+    auto leaves2 = make_shared<sphere>(point3(-3.5, 2.5, 8), 1.5, leaves_mat);
+    world.add(leaves2);
+
+    // Add tree (trunk and leaves)
+    shared_ptr<canbehit> trunk3 = box(point3(0,0,0), point3(1,3,1), trunk_mat);
+    auto moved_trunk3 = make_shared<translate>(trunk3, vec3(-6, 0, -8));
+    world.add(moved_trunk3);
+
+    // Add tree leaves (sphere on top of trunk)
+    auto leaves3 = make_shared<sphere>(point3(-6, 4, -8), 2, leaves_mat);
+    world.add(leaves3);
+
+    // Add multiple overlapping smoke volumes for puffier effect
+    auto smoke_boundary1 = make_shared<sphere>(point3(-1.5, 0.3, -5), 1.0, 
+                                             make_shared<dielectric>(1.5));
+    world.add(make_shared<constant_medium>(smoke_boundary1, 1.5, color(0.5, 0.5, 0.5)));
+
+    auto smoke_boundary2 = make_shared<sphere>(point3(-1.7, 0.4, -4.5), 0.8, 
+                                             make_shared<dielectric>(1.5));
+    world.add(make_shared<constant_medium>(smoke_boundary2, 2.0, color(0.6, 0.6, 0.6)));
+
+    auto smoke_boundary3 = make_shared<sphere>(point3(-1.3, 0.2, -5.5), 0.7, 
+                                             make_shared<dielectric>(1.5));
+    world.add(make_shared<constant_medium>(smoke_boundary3, 1.8, color(0.4, 0.4, 0.4)));
+
+    // Add "fire" spheres behind truck with motion and color variation
+    for(int i = 0; i < 12; i++) {
+        double x_offset = random_double(-0.3, 0.3);
+        double y_offset = random_double(-0.2, 0.2);
+        double z_offset = random_double(2.5, 4.5);
+        double size = random_double(0.05, 0.15);
+        
+        auto fire_color = color(
+            random_double(3, 5),
+            random_double(0.4, 1.6),
+            random_double(0.2, 0.4)
+        );
+        
+        auto fire_mat = make_shared<diffuse_light>(fire_color);
+        
+        point3 center1(-1.5 + x_offset, 0.3 + y_offset, -z_offset);
+        point3 center2(-1.5 + x_offset - 0.2,
+                      0.3 + y_offset + random_double(-0.1, 0.1),
+                      -z_offset + random_double(-0.2, 0.2));
+        
+        world.add(make_shared<sphere>(center1, center2, size, fire_mat));
+    }
+
+    // Add large grass ground plane
+    world.add(make_shared<quad>(point3(-50, -0.1, -50), vec3(100,0,0), vec3(0,0,100), grass_mat));
+    // Add road
+    world.add(make_shared<quad>(point3(-3, -0.05, -50), vec3(6,0,0), vec3(0,0,100), road_mat));
+
+    // Add sunset sun - repositioned to be visible in camera view
+    world.add(make_shared<sphere>(point3(-20, 4, -8), 2.0, sun_mat));
+
+    // Camera setup
+    camera cam;
+
+    // Basic image settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 1536;
+    cam.samples_per_pixel = 500;
+    cam.max_depth = 50;
+
+    // Camera position
+    cam.vfov = 40;
+    cam.lookfrom = point3(12, 2, 0);
+    cam.lookat = point3(0, 2, 0);
+    cam.vup = vec3(0, 1, 0);
+
+    // No depth of field
+    cam.defocus_angle = 0;
+
+    // Darker blue for sunset sky
+    cam.background = color(0.15, 0.25, 0.45);
+
+    // Render
+    cam.render(world);
+}
+
 int main() {
-    switch (7) {
-        case 1:  bouncing_spheres();   break;
+    switch (1) {
+        case 1:  figure_1();   break;
         case 2:  figure_2();  break;
         case 3:  figure_3(); break;
         case 4:  figure_4(); break;
         case 5:  figure_5(); break;
         case 6:  figure_6(); break;
         case 7:  figure_7(); break;
+        case 8:  figure_8(); break;
+        case 9:  figure_9(); break;
+        case 10:  figure_10(); break;
 
-        default: final_scene(800, 10000, 40); break;
+        default: figure_1(); break;
     }
 }
