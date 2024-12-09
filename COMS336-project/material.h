@@ -105,7 +105,7 @@ class dielectric: public material {
 
   };
 
-  class diffuse_light : public material {
+class diffuse_light : public material {
   public:
     diffuse_light(shared_ptr<texture> tex) : tex(tex) {}
     diffuse_light(const color& emit) : tex(make_shared<solid_color>(emit)) {}

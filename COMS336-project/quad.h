@@ -30,16 +30,13 @@ class quad : public canbehit {
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
         auto denom = dot(normal, r.direction());
 
-        // No hit if the ray is parallel to the plane.
         if (std::fabs(denom) < 1e-8)
             return false;
 
-        // Return false if the hit point parameter t is outside the ray interval.
         auto t = (D - dot(normal, r.origin())) / denom;
         if (!ray_t.contains(t))
             return false;
 
-        // Determine if the hit point lies within the planar shape using its plane coordinates.
         auto intersection = r.at(t);
         vec3 planar_hitpt_vector = intersection - Q;
         auto alpha = dot(w, cross(planar_hitpt_vector, v));
@@ -47,8 +44,6 @@ class quad : public canbehit {
 
         if (!is_interior(alpha, beta, rec))
             return false;
-
-        // Ray hits the 2D shape; set the rest of the hit record and return true.
 
         rec.t = t;
         rec.p = intersection;
@@ -60,8 +55,6 @@ class quad : public canbehit {
 
     virtual bool is_interior(double a, double b, hit_record& rec) const {
         interval unit_interval = interval(0, 1);
-        // Given the hit point in plane coordinates, return false if it is outside the
-        // primitive, otherwise set the hit record UV coordinates and return true.
 
         if (!unit_interval.contains(a) || !unit_interval.contains(b))
             return false;
@@ -83,11 +76,9 @@ class quad : public canbehit {
 
 inline shared_ptr<canbehit_list> box(const point3& a, const point3& b, shared_ptr<material> mat)
 {
-    // Returns the 3D box (six sides) that contains the two opposite vertices a & b.
 
     auto sides = make_shared<canbehit_list>();
 
-    // Construct the two opposite vertices with the minimum and maximum coordinates.
     auto min = point3(std::fmin(a.x(),b.x()), std::fmin(a.y(),b.y()), std::fmin(a.z(),b.z()));
     auto max = point3(std::fmax(a.x(),b.x()), std::fmax(a.y(),b.y()), std::fmax(a.z(),b.z()));
 
@@ -95,12 +86,12 @@ inline shared_ptr<canbehit_list> box(const point3& a, const point3& b, shared_pt
     auto dy = vec3(0, max.y() - min.y(), 0);
     auto dz = vec3(0, 0, max.z() - min.z());
 
-    sides->add(make_shared<quad>(point3(min.x(), min.y(), max.z()),  dx,  dy, mat)); // front
-    sides->add(make_shared<quad>(point3(max.x(), min.y(), max.z()), -dz,  dy, mat)); // right
-    sides->add(make_shared<quad>(point3(max.x(), min.y(), min.z()), -dx,  dy, mat)); // back
-    sides->add(make_shared<quad>(point3(min.x(), min.y(), min.z()),  dz,  dy, mat)); // left
-    sides->add(make_shared<quad>(point3(min.x(), max.y(), max.z()),  dx, -dz, mat)); // top
-    sides->add(make_shared<quad>(point3(min.x(), min.y(), min.z()),  dx,  dz, mat)); // bottom
+    sides->add(make_shared<quad>(point3(min.x(), min.y(), max.z()),  dx,  dy, mat));
+    sides->add(make_shared<quad>(point3(max.x(), min.y(), max.z()), -dz,  dy, mat));
+    sides->add(make_shared<quad>(point3(max.x(), min.y(), min.z()), -dx,  dy, mat));
+    sides->add(make_shared<quad>(point3(min.x(), min.y(), min.z()),  dz,  dy, mat));
+    sides->add(make_shared<quad>(point3(min.x(), max.y(), max.z()),  dx, -dz, mat));
+    sides->add(make_shared<quad>(point3(min.x(), min.y(), min.z()),  dx,  dz, mat));
 
     return sides;
 }

@@ -9,12 +9,10 @@ class triangle : public canbehit {
     triangle(const point3& v0, const point3& v1, const point3& v2, shared_ptr<material> mat)
       : v0(v0), v1(v1), v2(v2), mat(mat)
     {
-        // Calculate the normal using cross product of two edges
         auto edge1 = v1 - v0;
         auto edge2 = v2 - v0;
         normal = unit_vector(cross(edge1, edge2));
         
-        // Calculate the bounding box
         set_bounding_box();
     }
 
@@ -42,7 +40,6 @@ class triangle : public canbehit {
         auto h = cross(r.direction(), edge2);
         auto a = dot(edge1, h);
 
-        // If determinant is near zero, ray lies in plane of triangle
         if (a > -1e-8 && a < 1e-8)
             return false;
 

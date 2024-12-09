@@ -465,7 +465,7 @@ void mesh_test() {
 
     // Load meshes
     // Assuming you have a models directory with these files
-    world.add(make_shared<mesh>("meshes/Nefertiti.obj", red_metal));
+    world.add(make_shared<mesh>("meshes/cyclone.obj", red_metal));
     
     // Add a light source above
     world.add(make_shared<quad>(point3(-1, 8, -1), vec3(2,0,0), vec3(0,0,2), light));
@@ -495,26 +495,24 @@ void mesh_test() {
     cam.render(world);
 }
 
-void final_iowa_state_scene() {
+void isu_bar_scene() {
     canbehit_list world;
 
     // Materials
     auto neon_red = make_shared<diffuse_light>(color(15, 0.2, 0.2));
+    auto yellow_light = make_shared<lambertian>(color(15, 15, 5));
     auto glass = make_shared<dielectric>(1.5);
     auto chrome = make_shared<metal>(color(0.8, 0.8, 0.8), 0.0);
     auto wood = make_shared<lambertian>(color(0.6, 0.3, 0.15));
     auto bar_surface = make_shared<metal>(color(0.4, 0.4, 0.4), 0.1);
-    
-    // Create perlin noise for atmospheric effect
-    auto smoke_texture = make_shared<noise_texture>(4);
-    
+    auto perlin_texture = make_shared<noise_texture>(4);
+
     // Bar counter (large quad with metallic surface)
     world.add(make_shared<quad>(point3(-8, 0, -4), vec3(16,0,0), vec3(0,0,8), bar_surface));
     
-    // Back wall with subtle texture
-    auto wall_texture = make_shared<noise_texture>(2);
+    // Back wall with Perlin noise texture
     world.add(make_shared<quad>(point3(-8, 0, 5), vec3(16,0,0), vec3(0,8,0), 
-        make_shared<lambertian>(wall_texture)));
+        make_shared<lambertian>(perlin_texture)));
     
     // Iowa State logo components (using quads for neon effect)
     // Left: "I" shape
@@ -561,6 +559,9 @@ void final_iowa_state_scene() {
         world.add(make_shared<sphere>(center1, center2, 0.2, chrome));
     }
     
+    // Load and add the tornado mesh as a yellow light source
+    world.add(make_shared<mesh>("meshes/cyclone.obj", yellow_light));
+    
     // Add some ambient lighting
     auto dim_light = make_shared<diffuse_light>(color(0.6, 0.6, 0.6));
     world.add(make_shared<quad>(point3(-8, 8, -4), vec3(16,0,0), vec3(0,0,12), dim_light));
@@ -569,9 +570,9 @@ void final_iowa_state_scene() {
     camera cam;
     
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 800;  // Higher resolution for final render
-    cam.samples_per_pixel = 500;  // More samples for better quality
-    cam.max_depth         = 50;
+    cam.image_width       = 400;  // Higher resolution for final render
+    cam.samples_per_pixel = 10;  // More samples for better quality
+    cam.max_depth         = 10;
     cam.background        = color(0.02, 0.02, 0.02);  // Very dark background
     
     // Position camera to see everything
@@ -587,20 +588,252 @@ void final_iowa_state_scene() {
     cam.render(world);
 }
 
+void setup_common_scene(canbehit_list& world) {
+    // Materials
+    auto chrome = make_shared<metal>(color(0.8, 0.8, 0.8), 0.1);
+    auto glass = make_shared<dielectric>(1.5);
+    auto red_matte = make_shared<lambertian>(color(0.7, 0.3, 0.3));
+    auto light = make_shared<diffuse_light>(color(4, 4, 4));
+    
+    // Main objects
+    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, glass));        // Center glass sphere
+    world.add(make_shared<sphere>(point3(-2, 0.5, 1), 0.5, chrome));     // Left metal sphere
+    world.add(make_shared<sphere>(point3(2, 0.5, -1), 0.5, red_matte)); // Right red sphere
+    
+    // Light source
+    world.add(make_shared<quad>(point3(-1, 4, -1), vec3(2,0,0), vec3(0,0,2), light));
+    
+    // Ground plane
+    auto checker = make_shared<checker_texture>(0.5, color(.2, .3, .1), color(.9, .9, .9));
+    auto ground = make_shared<lambertian>(checker);
+    world.add(make_shared<quad>(point3(-5, 0, -5), vec3(10,0,0), vec3(0,0,10), ground));
+}
+
+void figure_2() {
+    canbehit_list world;
+    setup_common_scene(world);
+
+    camera cam;
+
+    // Basic camera settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 4;      // Low sample count
+    cam.max_depth = 5;              // Few ray bounces
+    
+    // Basic positioning
+    cam.vfov = 80;                  // Wide angle lens
+    cam.lookfrom = point3(-2,2,6);  // Further back
+    cam.lookat = point3(0,0,0);     // Looking at scene center
+    cam.vup = vec3(0,1,0);
+
+    // No depth of field
+    cam.defocus_angle = 0;          // Everything in focus
+    cam.focus_dist = 10;
+
+    // Basic background
+    cam.background = color(0.7, 0.8, 1.0);
+
+    cam.render(world);
+}
+
+void figure_3() {
+    canbehit_list world;
+    setup_common_scene(world);
+
+    camera cam;
+
+    // Enhanced settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;    // High sample count for smooth edges
+    cam.max_depth = 50;             // More bounces for better reflections
+    
+    // Better composition
+    cam.vfov = 40;                  // Narrower angle for less distortion
+    cam.lookfrom = point3(-2,2,4);  // Closer, more intimate view
+    cam.lookat = point3(0,0.5,0);   // Looking at sphere center
+    cam.vup = vec3(0,1,0);
+
+    // Artistic depth of field
+    cam.defocus_angle = 4.0;        // Subtle background blur
+    cam.focus_dist = 4.5;           // Focused on main sphere
+
+    // Dramatic background
+    cam.background = color(0.1, 0.1, 0.2);
+
+    cam.render(world);
+}
+
+void figure_4() {
+    // Scene setup
+    canbehit_list world;
+
+    // Single sphere with basic material
+    auto sphere_material = make_shared<lambertian>(color(0.7, 0.3, 0.3));  // Simple red diffuse
+    world.add(make_shared<sphere>(point3(0, 0, 0), 1.0, sphere_material));
+
+    // Add simple light source
+    auto light = make_shared<diffuse_light>(color(15, 15, 15));  // Increased light intensity
+    world.add(make_shared<quad>(point3(-2, 2, -2), vec3(4,0,0), vec3(0,0,4), light));
+
+    // Camera setup - minimal settings
+    camera cam;
+
+    // Basic image settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;    // Added some samples for better lighting
+    cam.max_depth = 50;           // Increased for proper light bounces
+
+    // Simple camera position
+    cam.vfov = 90;
+    cam.lookfrom = point3(0, 0, -3);  // Looking straight at sphere
+    cam.lookat = point3(0, 0, 0);     // Looking at center
+    cam.vup = vec3(0, 1, 0);
+
+    // No depth of field
+    cam.defocus_angle = 0;
+
+    // Simple background
+    cam.background = color(0.7, 0.7, 0.7);  // Gray background
+
+    // Render
+    cam.render(world);
+}
+
+void figure_5() {
+    // Scene setup
+    canbehit_list world;
+
+    // Single quad with basic material
+    auto quad_material = make_shared<lambertian>(color(0.3, 0.7, 0.3));  // Simple green diffuse
+    world.add(make_shared<quad>(point3(-1, -1, 0),     // Lower left corner
+                               vec3(2, 0, 0),           // Width vector (2 units wide)
+                               vec3(0, 2, 0),           // Height vector (2 units tall)
+                               quad_material));
+
+    // Add simple light source
+    auto light = make_shared<diffuse_light>(color(5, 5, 5));
+    world.add(make_shared<quad>(point3(-2, 2, -2), vec3(4,0,0), vec3(0,0,4), light));
+
+    // Camera setup - minimal settings
+    camera cam;
+
+    // Basic image settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 50;
+    cam.max_depth = 50;
+
+    // Simple camera position
+    cam.vfov = 90;
+    cam.lookfrom = point3(0, 0, -3);  // Looking straight at quad
+    cam.lookat = point3(0, 0, 0);     // Looking at center
+    cam.vup = vec3(0, 1, 0);
+
+    // No depth of field
+    cam.defocus_angle = 0;
+
+    // Simple background
+    cam.background = color(0.7, 0.7, 0.7);  // Gray background
+
+    // Render
+    cam.render(world);
+}
+
+void figure_6() {
+    // Scene setup
+    canbehit_list world;
+
+    // Single triangle with basic material
+    auto triangle_material = make_shared<lambertian>(color(0.3, 0.7, 0.3));  // Simple green diffuse
+    
+    // Define triangle vertices
+    point3 v0(-1, -1, 0);    // Bottom left
+    point3 v1(1, -1, 0);     // Bottom right
+    point3 v2(0, 1, 0);      // Top center
+    
+    world.add(make_shared<triangle>(v0, v1, v2, triangle_material));
+
+    // Add simple light source
+    auto light = make_shared<diffuse_light>(color(5, 5, 5));
+    world.add(make_shared<quad>(point3(-2, 2, -2), vec3(4,0,0), vec3(0,0,4), light));
+
+    // Camera setup - minimal settings
+    camera cam;
+
+    // Basic image settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 50;
+    cam.max_depth = 50;
+
+    // Simple camera position
+    cam.vfov = 90;
+    cam.lookfrom = point3(0, 0, -3);  // Looking straight at triangle
+    cam.lookat = point3(0, 0, 0);     // Looking at center
+    cam.vup = vec3(0, 1, 0);
+
+    // No depth of field
+    cam.defocus_angle = 0;
+
+    // Simple background
+    cam.background = color(0.7, 0.7, 0.7);  // Gray background
+
+    // Render
+    cam.render(world);
+}
+
+void figure_7() {
+    // Scene setup
+    canbehit_list world;
+
+    // Blue material for the mesh
+    auto mesh_material = make_shared<lambertian>(color(0.3, 0.3, 0.8));  // Changed to blue
+
+    // Add Nefertiti mesh directly
+    world.add(make_shared<triangle_mesh>("meshes/Nefertiti.obj", mesh_material));
+
+    // Add light source (toned down)
+    auto light = make_shared<diffuse_light>(color(7, 7, 7));  // Reduced intensity
+    world.add(make_shared<quad>(point3(-2, 4, -2), vec3(4,0,0), vec3(0,0,4), light));
+
+    // Camera setup
+    camera cam;
+
+    // Basic image settings
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 50;
+    cam.max_depth = 50;
+
+    // Camera position (moved back)
+    cam.vfov = 40;
+    cam.lookfrom = point3(0, 1, 8);    // Moved from 5 to 8 to zoom out
+    cam.lookat = point3(0, 0, 0);
+    cam.vup = vec3(0, 1, 0);
+
+    // No depth of field
+    cam.defocus_angle = 0;
+
+    // Background
+    cam.background = color(0.7, 0.7, 0.7);
+
+    // Render
+    cam.render(world);
+}
+
 int main() {
-    switch (11) {
+    switch (7) {
         case 1:  bouncing_spheres();   break;
-        case 2:  checkered_spheres();  break;
-        case 3:  max_pizza();          break;
-        case 4:  perlin_spheres();     break;
-        case 5:  quads();              break;
-        case 6:  simple_light();       break;
-        case 7:  cornell_box();        break;
-        case 8:  triangle_test();      break;
-        case 9:  cornell_smoke();      break;
-        case 10: mesh_test();          break;
-        case 11: final_iowa_state_scene(); break;
-        case 12: final_scene(800, 10000, 40); break;
-        default: final_scene(400,   250,  4); break;
+        case 2:  figure_2();  break;
+        case 3:  figure_3(); break;
+        case 4:  figure_4(); break;
+        case 5:  figure_5(); break;
+        case 6:  figure_6(); break;
+        case 7:  figure_7(); break;
+
+        default: final_scene(800, 10000, 40); break;
     }
 }
