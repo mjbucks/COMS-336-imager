@@ -393,14 +393,20 @@ void figure_1() {
     // Scene setup
     canbehit_list world;
 
+    auto grass_texture = make_shared<image_texture>("grass-texture.jpg");
+    auto grass_mat = make_shared<lambertian>(grass_texture);
+    auto trunk_texture = make_shared<image_texture>("wood-texture.jpg");
+    auto trunk_mat = make_shared<lambertian>(trunk_texture);
+    auto building_texture = make_shared<image_texture>("stone-brick.jpg");
+    auto building_mat = make_shared<lambertian>(building_texture);
+    auto leaves_texture = make_shared<image_texture>("leaves.jpg");
+    auto leaves_mat = make_shared<lambertian>(leaves_texture);
+    auto road_texture = make_shared<image_texture>("gravel.jpg");
+    auto road_mat = make_shared<lambertian>(road_texture);
+
     // Create materials
     auto red_mat = make_shared<lambertian>(color(0.8, 0.2, 0.2));    // Bright red for truck
-    auto grass_mat = make_shared<lambertian>(color(0.2, 0.6, 0.2));  // Green for grass
-    auto road_mat = make_shared<lambertian>(color(0.3, 0.3, 0.3));   // Gray for road
-    auto building_mat = make_shared<lambertian>(color(0.6, 0.6, 0.6));  // Light gray for building
     auto sun_mat = make_shared<diffuse_light>(color(30, 16, 6));    // Orange-yellow sun
-    auto trunk_mat = make_shared<lambertian>(color(0.4, 0.2, 0.1));  // Brown for tree trunk
-    auto leaves_mat = make_shared<lambertian>(color(0.2, 0.5, 0.1));  // Dark green for leaves
 
     // Add truck mesh
     auto truck = make_shared<mesh>("meshes/Cybertruck.obj", red_mat);
@@ -492,7 +498,7 @@ void figure_1() {
     // Basic image settings
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1536;
-    cam.samples_per_pixel = 500;
+    cam.samples_per_pixel = 650;
     cam.max_depth = 50;
 
     // Camera position
