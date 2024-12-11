@@ -21,7 +21,6 @@ class rtw_image {
         auto filename = std::string(image_filename);
         auto imagedir = getenv("RTW_IMAGES");
 
-        // Hunt for the image file in some likely locations.
         if (imagedir && load(std::string(imagedir) + "/" + image_filename)) return;
         if (load(filename)) return;
         if (load("images/" + filename)) return;
@@ -66,10 +65,10 @@ class rtw_image {
 
   private:
     const int      bytes_per_pixel = 3;
-    float         *fdata = nullptr;         // Linear floating point pixel data
-    unsigned char *bdata = nullptr;         // Linear 8-bit pixel data
-    int            image_width = 0;         // Loaded image width
-    int            image_height = 0;        // Loaded image height
+    float         *fdata = nullptr;
+    unsigned char *bdata = nullptr;
+    int            image_width = 0;
+    int            image_height = 0;
     int            bytes_per_scanline = 0;
 
     static int clamp(int x, int low, int high) {

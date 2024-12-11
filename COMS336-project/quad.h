@@ -19,7 +19,6 @@ class quad : public canbehit {
     }
 
     virtual void set_bounding_box() {
-        // Compute the bounding box of all four vertices.
         auto bbox_diagonal1 = aabb(Q, Q + u + v);
         auto bbox_diagonal2 = aabb(Q + u, Q + v);
         bbox = aabb(bbox_diagonal1, bbox_diagonal2);

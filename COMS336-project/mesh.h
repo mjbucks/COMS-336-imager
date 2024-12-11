@@ -24,7 +24,7 @@ public:
             std::string type;
             iss >> type;
 
-            if (type == "v") {  // Vertex
+            if (type == "v") {
                 double x, y, z;
                 iss >> x >> y >> z;
                 vertices.push_back(point3(x, y, z));

@@ -497,7 +497,7 @@ void figure_1() {
 
     // Basic image settings
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1536;
+    cam.image_width = 1024;
     cam.samples_per_pixel = 650;
     cam.max_depth = 50;
 
@@ -511,7 +511,7 @@ void figure_1() {
     cam.defocus_angle = 0;
 
     // Darker blue for sunset sky
-    cam.background = color(0.15, 0.25, 0.45);
+    cam.background = color(0.45, 0.75, 1.35);
 
     // Render
     cam.render(world);
